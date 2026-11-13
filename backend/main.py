@@ -1,25 +1,35 @@
 
-from fastapi import FastAPI
-from pydantic import BaseModel
+import httpx
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field, ValidationError
+
+from backend.analyzer import analyze_with_ai
+
 
 app = FastAPI(
     title="MercadoLibre AppSec GenAI",
-    description="API para análisis de seguridad de código fuente",
-    version="1.0.0"
+    description="AI-Powered Security Code Review",
+    version="1.1.0"
 )
 
 
 class CodeAnalysisRequest(BaseModel):
-    filename: str
-    code: str
+    filename: str = Field(
+        min_length=1,
+        max_length=255
+    )
+    code: str = Field(
+        min_length=1,
+        max_length=100000
+    )
 
 
 @app.get("/")
 def home():
     return {
         "application": "AppSec GenAI",
-        "status": "running",
-        "message": "Backend funcionando correctamente"
+        "status": "running"
     }
 
 
@@ -29,10 +39,23 @@ def health():
 
 
 @app.post("/analyze")
-def analyze_code(request: CodeAnalysisRequest):
-    return {
-        "filename": request.filename,
-        "status": "received",
-        "message": "Código recibido correctamente",
-        "lines": len(request.code.splitlines())
-    }
+async def analyze_code(request: CodeAnalysisRequest):
+    try:
+        return await analyze_with_ai(
+            filename=request.filename,
+            code=request.code
+        )
+
+    except (
+        httpx.HTTPError,
+        ValidationError,
+        ValueError,
+        KeyError
+    ):
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "El análisis de seguridad no pudo "
+                "completarse. No se emite aprobación."
+            )
+        )
