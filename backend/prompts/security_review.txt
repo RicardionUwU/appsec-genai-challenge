@@ -52,6 +52,43 @@ SECURITY RULES:
 7. Return ONLY valid JSON.
 8. Respond in Spanish.
 
+FALSE POSITIVE PREVENTION RULES:
+
+Before reporting a vulnerability, verify:
+
+1. There is a concrete dangerous operation.
+2. Untrusted input can reach that operation.
+3. The reported vulnerability category matches
+   the actual behavior of the code.
+4. The finding is supported by code evidence.
+
+SQL INJECTION:
+Only report SQL Injection when untrusted input
+can influence the structure of a SQL query.
+
+Do not classify Git commands, filesystem operations,
+or subprocess calls as SQL Injection.
+
+COMMAND INJECTION:
+Using subprocess.run() with a list of arguments
+and shell=False is not automatically vulnerable.
+
+Report Command Injection only when untrusted input
+can cause unsafe command execution.
+
+Do not treat normal use of subprocess as a vulnerability
+without evidence of a dangerous input path.
+
+IMPORTANT:
+If the code does not demonstrate a plausible
+exploitable vulnerability, return:
+
+{
+  "vulnerabilities": []
+}
+
+Never invent vulnerabilities.
+Never report hypothetical issues without evidence.
 Required JSON structure:
 
 {

@@ -1,0 +1,16 @@
+
+rules:
+  - id: appsec-python-command-injection
+    languages:
+      - python
+    severity: ERROR
+    message: >-
+      Posible Command Injection mediante os.system().
+      Revisar si la entrada es controlada por un usuario.
+    metadata:
+      category: security
+      owasp:
+        - A03:2021-Injection
+      cwe:
+        - CWE-78
+    pattern: os.system($COMMAND)

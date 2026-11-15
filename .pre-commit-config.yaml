@@ -1,0 +1,11 @@
+repos:
+  - repo: local
+    hooks:
+      - id: appsec-genai
+        name: AppSec GenAI Security Scanner
+        entry: python hooks/pre_commit.py
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+        verbose: true
