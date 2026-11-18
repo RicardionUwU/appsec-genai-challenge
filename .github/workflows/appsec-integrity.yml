@@ -49,7 +49,7 @@ jobs:
           APPSEC_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           APPSEC_REPOSITORY: ${{ github.repository }}
         run: |
-          python scripts/ci_verify.py
+          python -m scripts.ci_verify
 
       # Publicamos el estado en el SHA exacto
       # del PR, no en el SHA de master.
