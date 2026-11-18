@@ -1,16 +1,137 @@
 
 rules:
+
+  # ========================================
+  # A03 - COMMAND INJECTION
+  # ========================================
+
   - id: appsec-python-command-injection
+
     languages:
       - python
+
     severity: ERROR
+
     message: >-
       Posible Command Injection mediante os.system().
-      Revisar si la entrada es controlada por un usuario.
+      Revisar si el comando contiene datos no confiables.
+      Evitar ejecutar comandos arbitrarios y utilizar
+      operaciones permitidas con argumentos explicitos.
+
     metadata:
-      category: security
       owasp:
-        - A03:2021-Injection
-      cwe:
-        - CWE-78
+        - "A03:2021-Injection"
+
     pattern: os.system($COMMAND)
+
+
+  # ========================================
+  # A02 - CRYPTOGRAPHIC FAILURES
+  # ========================================
+
+  - id: appsec-python-weak-password-hash
+
+    languages:
+      - python
+
+    severity: ERROR
+
+    message: >-
+      Uso de MD5 para procesar una posible contrasena.
+      MD5 es inadecuado para el almacenamiento seguro
+      de contrasenas. Utilizar Argon2id, scrypt o
+      un mecanismo de hashing de contrasenas adecuado.
+
+    metadata:
+      owasp:
+        - "A02:2021-Cryptographic Failures"
+
+    patterns:
+      - pattern: hashlib.md5($PASSWORD.encode(...))
+
+      - metavariable-regex:
+          metavariable: $PASSWORD
+          regex: '^(password|passwd|pwd|user_password)$'
+
+
+  # ========================================
+  # A05 - SECURITY MISCONFIGURATION
+  # ========================================
+
+  - id: appsec-python-flask-debug-enabled
+
+    languages:
+      - python
+
+    severity: ERROR
+
+    message: >-
+      Flask tiene habilitado el modo debug.
+      El depurador interactivo no debe exponerse
+      en entornos de produccion. Deshabilitar
+      debug y utilizar un servidor adecuado
+      para despliegues productivos.
+
+    metadata:
+      owasp:
+        - "A05:2021-Security Misconfiguration"
+
+    pattern: $APP.run(debug=True)
+
+  # ========================================
+  # A08 - INSECURE DESERIALIZATION
+  # ========================================
+
+  - id: appsec-python-unsafe-deserialization
+
+    languages:
+      - python
+
+    severity: ERROR
+
+    message: >-
+      Deserializacion insegura detectada.
+      pickle.loads() recibe directamente datos
+      provenientes de una solicitud HTTP.
+      La deserializacion de datos no confiables
+      puede provocar ejecucion de codigo.
+      Utilizar un formato seguro como JSON
+      y validar el contenido recibido.
+
+    metadata:
+      owasp:
+        - "A08:2021-Software and Data Integrity Failures"
+
+    pattern-either:
+      - pattern: pickle.loads(request.get_data())
+      - pattern: pickle.loads(request.data)
+
+
+  # ========================================
+  # A10 - SERVER-SIDE REQUEST FORGERY
+  # ========================================
+
+  - id: appsec-python-ssrf-user-url
+
+    languages:
+      - python
+
+    severity: ERROR
+
+    message: >-
+      Posible SSRF: la aplicacion realiza
+      una solicitud HTTP utilizando directamente
+      una URL proporcionada por el usuario.
+      Un atacante podria intentar acceder a
+      servicios internos o destinos no autorizados.
+      Aplicar una allowlist de destinos,
+      validar el esquema y restringir redirects.
+
+    metadata:
+      owasp:
+        - "A10:2021-Server-Side Request Forgery"
+
+    pattern-either:
+      - pattern: requests.get(request.args.get("url"), ...)
+      - pattern: requests.post(request.args.get("url"), ...)
+      - pattern: httpx.get(request.args.get("url"), ...)

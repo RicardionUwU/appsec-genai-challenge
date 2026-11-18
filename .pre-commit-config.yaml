@@ -1,3 +1,4 @@
+
 repos:
   - repo: local
     hooks:
@@ -8,4 +9,13 @@ repos:
         pass_filenames: false
         always_run: true
         stages: [pre-commit]
+        verbose: true
+
+      - id: appsec-genai-commit-msg
+        name: AppSec GenAI Signed Commit Attestation
+        entry: python hooks/commit_msg.py
+        language: system
+        pass_filenames: true
+        always_run: true
+        stages: [commit-msg]
         verbose: true
