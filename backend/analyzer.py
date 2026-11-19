@@ -123,7 +123,7 @@ def validate_findings(
 
     Controles:
 
-    1. La linea indicada debe existir.
+    1. La linea se valida o reconcilia con evidencia exacta.
     2. La evidencia no puede estar vacia.
     3. La evidencia debe existir exactamente
        dentro del fragmento.
@@ -157,16 +157,10 @@ def validate_findings(
         evidence = finding["evidence"]
 
         # ==================================
-        # 1. VALIDAR NUMERO DE LINEA
+        # 1. PREPARAR VALIDACION DE LINEA
         # ==================================
 
-        if not (
-            1 <= line_number <= len(lines)
-        ):
-            raise ValueError(
-                "El LLM genero un hallazgo "
-                "con un numero de linea inexistente."
-            )
+        # La ubicacion se valida mediante evidencia exacta y unica.
 
         # ==================================
         # 2. VALIDAR EVIDENCIA NO VACIA
@@ -178,9 +172,11 @@ def validate_findings(
                 "con evidencia vacia."
             )
 
-        actual_line = lines[
-            line_number - 1
-        ]
+        actual_line = (
+            lines[line_number - 1]
+            if 1 <= line_number <= len(lines)
+            else None
+        )
 
         corrected = False
 
@@ -206,6 +202,17 @@ def validate_findings(
                 )
                 if line == evidence
             ]
+
+            # Recuperar solo indentacion omitida, con coincidencia unica.
+            if not matches and evidence == evidence.lstrip(chr(32) + chr(9)):
+                matches = [
+                    index
+                    for index, source_line in enumerate(lines, start=1)
+                    if source_line.lstrip(chr(32) + chr(9)) == evidence
+                ]
+                if len(matches) == 1:
+                    evidence = lines[matches[0] - 1]
+                    finding.update(evidence=evidence)
 
             if len(matches) == 1:
 
