@@ -1,0 +1,11 @@
+# AppSec GenAI - Python dependencies
+# Direct dependencies; Docker and Ollama are external services.
+fastapi==0.162.7
+uvicorn==0.54.0
+httpx==0.28.1
+pydantic==2.14.3
+PyJWT==2.15.1
+cryptography==50.0.2
+python-dotenv==1.2.4
+keyring==25.7.0
+pre-commit==4.7.0
